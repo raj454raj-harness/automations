@@ -40,8 +40,10 @@ git_push() {
 }
 
 get_jira_task() {
+  PROJECTS="BT|CCE|CCM|CDC|CDNG|CDP|CE|CI|CV|CVNG|DEL|DOC|DX|ER|OPS|PL|SEC|SWAT|GTM"
   branch_name=$(get_branch_name)
-  echo $(tr '[:lower:]' '[:upper:]' <<< "$branch_name")
+  task_id=$(grep -iE --only-matching "($PROJECTS)\-\d+" <<< $branch_name)
+  echo $(tr '[:lower:]' '[:upper:]' <<< "$task_id")
 }
 
 git_commit() {

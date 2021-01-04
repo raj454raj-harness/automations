@@ -29,7 +29,7 @@ $ z format
 ```
 3. Commit by prepending the jira task
 
-**Note:** This requires your branch name to be the jira id. Example branch name: - `cdng-3267`
+**Note:** This requires your branch name to start with jira id. Example branch names: - `cdng-3267`, `cdng-3267-sub-feature`
 ```
 $ z commit this is a new commit
 ```
