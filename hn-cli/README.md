@@ -28,6 +28,7 @@ $ z build
 $ z format
 ```
 3. Commit by prepending the jira task
+
 **Note:** This requires your branch name to be the jira id. Example branch name: - `cdng-3267`
 ```
 $ z commit this is a new commit
@@ -46,3 +47,12 @@ $ z clean
 ```
 $ z clean_install
 ```
+7. Just bazel_script.sh
+```
+$ z bazel
+```
+8. Just mvn clean install
+```
+$ z mvn
+```
+

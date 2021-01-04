@@ -84,4 +84,13 @@ case $1 in
     bazel_script_sh
     mvn_clean_install
     say clean install done
+    ;;
+  bazel)
+    bazel_script_sh
+    say bazel script done
+    ;;
+  mvn)
+    mvn_clean_install
+    say mvn clean done
+    ;;
 esac
