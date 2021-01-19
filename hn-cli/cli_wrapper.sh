@@ -7,6 +7,18 @@
 REPO=~/harness/portal
 commit_message="${*:2}"
 
+say_it_out() {
+  zoom_ongoing=$(ps -ef | grep "/Applications/zoom.us.app/Contents/Frameworks/cpthost.app/Contents/MacOS/CptHost" | grep -v grep | wc -l | awk '{print $1}')
+  if [[ $zoom_ongoing == "1" ]]; then
+    echo "Zoom meeting ongoing, just sending badge!"
+    command="$@"
+    /usr/bin/osascript -e "display notification \"${command}\" with title \"Command done\""
+  else
+    echo "Zoom not ongoing"
+    say "$@"
+  fi
+}
+
 mvn_clean_install() {
   mvn clean install -DskipTests
 }
@@ -61,38 +73,38 @@ case $1 in
   build)
     bazel_script_sh
     mvn_clean_install
-    say build done
+    say_it_out build done
     ;;
   format)
     bazel_format_build_files
     git_clang_format
-    say format done
+    say_it_out format done
     ;;
   commit)
     git_commit
-    say git commit done
+    say_it_out git commit done
     ;;
   push)
     git_push
-    say git push done
+    say_it_out git push done
     create_pull_request
     ;;
   clean)
     clean_m2_completely
-    say clean done
+    say_it_out clean done
     ;;
   clean_install)
     clean_m2_completely
     bazel_script_sh
     mvn_clean_install
-    say clean install done
+    say_it_out clean install done
     ;;
   bazel)
     bazel_script_sh
-    say bazel script done
+    say_it_out bazel script done
     ;;
   mvn)
     mvn_clean_install
-    say mvn clean done
+    say_it_out mvn clean done
     ;;
 esac
