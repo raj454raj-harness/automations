@@ -19,6 +19,32 @@ say_it_out() {
   fi
 }
 
+kconnect() {
+  cluster=$1
+  echo $cluster
+  if [[ $cluster == "jenkins" ]]; then
+    gcloud container clusters get-credentials jenkins-private --zone us-west1-b --project platform-205701
+  elif [[ $cluster == "pr" ]]; then
+    gcloud container clusters get-credentials pr-private --zone us-central1-c --project qa-setup
+  elif [[ $cluster == "qb" ]]; then
+    gcloud container clusters get-credentials qb-private --zone us-west1-a --project qa-setup
+  elif [[ $cluster == "qa" ]]; then
+    gcloud container clusters get-credentials qa-private --region us-west1 --project qa-setup
+  elif [[ $cluster == "uat" ]]; then
+    gcloud container clusters get-credentials uat-private --zone us-central1-a --project uat-setup-261723
+  else
+    echo "unknown cluster"
+  fi
+}
+
+kshell() {
+  kubectl exec --stdin --tty $1 --namespace $2 -- /bin/sh
+}
+
+kpods() {
+  kubectl get pods -A | grep "$1" | awk '{print $1,$2,$3,$4}' | column -t
+}
+
 mvn_clean_install() {
   mvn clean install -DskipTests
 }
@@ -48,7 +74,11 @@ create_pull_request() {
 }
 
 git_push() {
-  git push origin $(get_branch_name)
+  if [[ $1 == "verify" ]]; then
+    git push origin $(get_branch_name)
+  else
+    git push origin $(get_branch_name) --no-verify
+  fi
 }
 
 get_jira_task() {
@@ -60,7 +90,11 @@ get_jira_task() {
 
 git_commit() {
   task_name=$(get_jira_task)
-  git commit -m "[$task_name]: $commit_message"
+  if [[ $1 == "verify" ]]; then
+    git commit -m "[$task_name]: $commit_message"
+  else
+    git commit -m "[$task_name]: $commit_message" --no-verify
+  fi
 }
 
 clean_m2_completely() {
@@ -68,7 +102,6 @@ clean_m2_completely() {
   rm -rf ~/.m2/repository/io/harness/cv
 }
 
-cd $REPO
 case $1 in
   build)
     bazel_script_sh
@@ -81,11 +114,20 @@ case $1 in
     say_it_out format done
     ;;
   commit)
-    git_commit
+    git_commit verify
+    say_it_out git commit done
+    ;;
+  ncommit)
+    git_commit noverify
     say_it_out git commit done
     ;;
   push)
-    git_push
+    git_push verify
+    say_it_out git push done
+    create_pull_request
+    ;;
+  npush)
+    git_push noverify
     say_it_out git push done
     create_pull_request
     ;;
@@ -106,5 +148,14 @@ case $1 in
   mvn)
     mvn_clean_install
     say_it_out mvn clean done
+    ;;
+  connect)
+    kconnect $2
+    ;;
+  shell)
+    kshell $2 $3
+    ;;
+  pods)
+    kpods $2
     ;;
 esac
